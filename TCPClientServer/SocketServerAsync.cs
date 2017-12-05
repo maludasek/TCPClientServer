@@ -256,5 +256,38 @@ namespace TCPClientServer
                 Debug.WriteLine(String.Format("Exception message: {0}", ex.Message.ToString()));
             }
         }
+
+        // Wyślij z Serwera do wszystkich klientów z listy text message
+        public async void SendToAll(string textMessage)
+        {
+            // Wróć jeżeli pusty message
+            if (string.IsNullOrEmpty(textMessage))
+            {
+                return;
+            }
+            // Spróbuj wysłać textMessage do klientów
+            try
+            {
+                // Konwertuj string na bajty
+                byte[] buffMessage = Encoding.ASCII.GetBytes(textMessage);
+
+                // Dla każdego klienta z listy
+                foreach (var client in mClients)
+                {
+                    // Wyślij Stream (message) asynchronicznie do klienta
+                    await client.GetStream().WriteAsync(buffMessage, 0, buffMessage.Length);
+
+                    // Obsłuż zdarzenie wyślij message do wszystkich - robić dla każdego klienta czy tylko raz?
+                    OnRaiseTextSendToAllEvent(new TextSendToAllEventArgs(textMessage));
+                }
+            }
+            catch (Exception ex)
+            {
+                // Wyślij błąd do debuggera - dorobić
+                Debug.WriteLine(String.Format("Exception message: {0}", ex.Message.ToString()));
+            }
+        }
+
+
     }
 }
