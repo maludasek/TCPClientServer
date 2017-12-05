@@ -18,6 +18,18 @@ namespace TCPClientServer
         }
     }
 
+    // Argumenty zdarzenia OnRaiseServerStopEvent
+    public class ServerStopEventArgs : EventArgs
+    {
+        public string ServerIP { get; set; }
+        public int Port { get; set; }
+        public ServerStopEventArgs(string serverIP, int port)
+        {
+            ServerIP = serverIP;
+            Port = port;
+        }
+    }
+
     // Argumenty zdarzenia OnRaiseServerConnectedEvent
     public class ServerConnectedEventArgs : EventArgs
     {
