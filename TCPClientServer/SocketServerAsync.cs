@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -141,6 +142,83 @@ namespace TCPClientServer
             {
                 // Wyślij błąd do debuggera - dorobić
                 Debug.WriteLine(String.Format("Exception message: {0}", ex.Message.ToString()));
+            }
+        }
+
+        // Obsłuż klienta newClient
+        private async void TakeCareOfTcpClient(TcpClient paramClient)
+        {
+            // Deklaracja strumienia sieciowego
+            NetworkStream stream = null;
+            // Deklaracja czytnika strumieni
+            StreamReader reader = null;
+
+            try
+            {
+                // Podłączenie strumienia z klienta
+                stream = paramClient.GetStream();
+                // Czytanie strumienia klienta
+                reader = new StreamReader(stream);
+                // Deklaracja bufora strumienia
+                char[] buff = new char[64];
+                // Czytanie danych gdy Serwer chodzi 
+                while (KeepRunning)
+                {
+                    // Wyślij info do debugera o rozpoczęciu czytania strumienia
+                    // Debug.WriteLine("*** Ready to read");
+
+                    // Czytaj asynchronicznie strumień od klienta - nRet ilość przeczytanych danych
+                    int nRet = await reader.ReadAsync(buff, 0, buff.Length);
+
+                    // Wyślij info do debugera o ilości przechwyconych danych
+                    //Debug.WriteLine(String.Format("Returned: {0}", nRet));
+
+                    // Jeżeli ilość danych jest równa 0
+                    if (nRet == 0)
+                    {
+                        // Usuń klienta z listy i obsłuż odłączenie się klienta
+                        RemoveClient(paramClient);
+                        // przerwij pętle czytania danych od klienta
+                        break;
+                    }
+
+                    // Konwersja bufora na string
+                    string receivedText = new string(buff);
+
+                    // Przesyła dane z bufora do debugera
+                    // Debug.WriteLine(String.Format("*** Received: {0}", receivedText));
+
+                    // Obsługuje zdarzenie odczytania danych od klienta
+                    OnRaiseTextReceivedEvent(new TextReceivedEventArgs(paramClient.Client.RemoteEndPoint.ToString(), receivedText));
+
+                    // Czyszczenie bufora
+                    Array.Clear(buff, 0, buff.Length);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Usuń klienta z listy i obsłuż odłączenie się klienta
+                RemoveClient(paramClient);
+
+                // Wyślij komunikat do debugera z błędem
+                Debug.WriteLine(String.Format("Exception message: {0}", ex.Message.ToString()));
+            }
+        }
+
+
+        // Usuwa klienta z listy i obsługuje zdarzenie odłączenia się klienta od serwera
+        private void RemoveClient(TcpClient paramClient)
+        {
+            // Jeżeli na liście klientów serwera znajduje się dany klient
+            if (mClients.Contains(paramClient))
+            {
+                // Usuń klienta z listy
+                mClients.Remove(paramClient);
+                // Obsłuż odłączenie się klienta
+                OnRaiseClientDisconnectedEvent(new ClientDisconnectedEventArgs(paramClient.Client.RemoteEndPoint.ToString(), mClients.Count));
+
+                // Wyślij komunikat do debugera
+                // Debug.WriteLine(String.Format("Client: {0} disconnected, # of connected clients {1}", paramClient.Client.RemoteEndPoint, mClients.Count));
             }
         }
 
