@@ -100,4 +100,15 @@ namespace TCPClientServer
         }
     }
 
+    // Argumenty zdarzenia OnRaiseTextSendEvent
+    public class TextSendEventArgs : EventArgs
+    {
+        public string IpAddress { get; set; }
+        public string TextSend { get; set; }
+        public TextSendEventArgs(string ipAddress, string textSend)
+        {
+            IpAddress = ipAddress;
+            TextSend = textSend;
+        }
+    }
 }

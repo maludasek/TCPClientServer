@@ -46,7 +46,7 @@ namespace TCPClientServer
         // Obsługa zdarzenia Start Serwera
         protected virtual void OnRaiseServerStartEvent(ServerStartEventArgs e)
         {
-            // Wywołanie zdarzenia w tarym formacie?
+            // Wywołanie zdarzenia w starym formacie?
             //EventHandler<ServerStartEventArgs> handler = RaiseServerStartEvent;
             //if (handler != null)
             //{
