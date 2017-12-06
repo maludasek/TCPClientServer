@@ -19,6 +19,8 @@ namespace TCPClientServer
         int mServerPort;
         // Zmienna klient
         TcpClient mClient;
+        // Czy podłączony
+        public bool IsConnected;
 
         // Wyjątki
         // Zgłoszenie zdarzenia Otrzymano tekst
@@ -29,6 +31,8 @@ namespace TCPClientServer
         public EventHandler<ServerConnectedEventArgs> RaiseServerConnectedEvent;
         // Zgłoszenie zdarzenia Odłączono od serwera
         public EventHandler<ServerDisconnectedEventArgs> RaiseServerDisconnectedEvent;
+        // Zgłoszenie zdarzenia Błędu
+        public EventHandler<ExceptionEventArgs> RaiseExceptionEvent;
 
         // Konstruktor
         public SocketClientAsync()
@@ -73,6 +77,13 @@ namespace TCPClientServer
             RaiseServerDisconnectedEvent?.Invoke(this, e);
         }
 
+        // Obsługa zdarzenia Odłączono do serwera
+        protected virtual void OnRaiseExceptionEvent(ExceptionEventArgs e)
+        {
+            // Wywołanie zdarzenia
+            RaiseExceptionEvent?.Invoke(this, e);
+        }
+
         // Ustawienie IP serwera
         private void SetServerIpAddress(string strHost)
         {
@@ -85,10 +96,10 @@ namespace TCPClientServer
                     // Spróbuj zmienić host name na adres IP i przypsać do globalnej zmiennej mServerIpAddress
                     mServerIpAddress = Dns.GetHostAddresses(strHost).Where(addrf => addrf.AddressFamily == AddressFamily.InterNetwork).FirstOrDefault();
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    // Gdy zostanie zgłoszony wyjątek wyślij błąd o błędnym IP lub host name - obsłużyć
-                    throw new ArgumentException("Host name or IP is invalid.");
+                    // Obsłuż zdarzenie Błędnego IP lub hostname
+                    OnRaiseExceptionEvent(new ExceptionEventArgs("Invalid host or IP", ex.Message.ToString()));
                 }
             }
             else
@@ -104,8 +115,16 @@ namespace TCPClientServer
             // Sprawdź czy numer portu jest z zakresu od 1 do 65534
             if (portNumber <= 0 || portNumber > 65535)
             {
-                // Jeżeli nie to wywal wyjątek o błędnym porcie - obsłużyć
-                throw new ArgumentOutOfRangeException("Port number is invalid.");
+                // Jeżeli nie to wywal wyjątek o błędnym porcie
+                try
+                {
+                    throw new ArgumentOutOfRangeException("Invalid port number.");
+                }
+                catch (Exception ex)
+                {
+                    // Obsłuż zdarzenie Błędnego IP lub hostname
+                    OnRaiseExceptionEvent(new ExceptionEventArgs("Invalid port number", ex.Message.ToString()));
+                }
             }
             // Przypisz port do zmiennej globalnej
             mServerPort = portNumber;
@@ -137,7 +156,8 @@ namespace TCPClientServer
 
                 // Obsłuż zdarzenie podłączenia się do klienta
                 OnRaiseServerConnectedEvent(new ServerConnectedEventArgs(mServerIpAddress.ToString(), mServerPort.ToString()));
-
+                // ustaw zmienną globalna czy podłączony na true
+                IsConnected = true;
                 // Nasłuchuj serwer
                 await ReadDataAsync(mClient);
             }
@@ -146,7 +166,9 @@ namespace TCPClientServer
                 // Wyślij info do bebugera o błędzie - obsłużyć
                 Debug.WriteLine("Exception message: {0}", ex.Message.ToString());
                 // wywal aplikację 
-                throw;
+                OnRaiseExceptionEvent(new ExceptionEventArgs("Unknown error occured while connecting to the server", ex.Message));
+                // ustaw zmienną globalna czy podłączony na false
+                IsConnected = false;
             }
         }
 
@@ -174,33 +196,6 @@ namespace TCPClientServer
                 // zamknij klienta
                 mClient.Close();
 
-                // drugi sposób słuchania serwera
-                // deklaracja zmiennej 
-                //int readByteCount = 0;
-                // gdy prawda
-                //while (true)
-                //{
-                //    // przypisz stream do zmiennej
-                //    readByteCount = await clientStreamReader.ReadAsync(buff, 0, buff.Length);
-                //    // jeżeli długość zmiennej streamu jest mniejsz lub równa 0
-                //    if (readByteCount <= 0)
-                //    {
-                //        // Wyślij komunikat do debugera
-                //        //Debug.WriteLine("Remote server has closed connection.");
-                //        // zamknij klienta
-                //        mClient.Close();
-                //        // wyjdź z pętli
-                //        break;
-                //    }
-                //    // wyślij stream do debugera
-                //    //Debug.WriteLine(string.Format("Received bytes: {0} - Message: {1}",readByteCount, new string(buff)));
-                //    // zgłość zdarzenie o otrzymaniu danych
-                //    OnRaiseTextReceivedEvent(new TextReceivedEventArgs(
-                //        client.Client.RemoteEndPoint.ToString(),
-                //        new string(buff)));
-                //    // wyczyść bufor
-                //    Array.Clear(buff, 0, buff.Length);
-                //}
             }
             // obsłuż wyjątek braku obiektu
             catch (ObjectDisposedException)
@@ -259,9 +254,13 @@ namespace TCPClientServer
                 {
                     // rorzłącz klienta od serwera (zamknij połączenie)
                     mClient.Close();
+                    IsConnected = false;
                 }
+                // Resetowanie klienta
+                mClient = null;
                 // zgłoś zdarzenie o odłączeniu się od klienta
                 OnRaiseServerDisconnectedEvent(new ServerDisconnectedEventArgs(mServerIpAddress.ToString(), mServerPort.ToString()));
+
             }
         }
     }

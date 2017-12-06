@@ -111,4 +111,17 @@ namespace TCPClientServer
             TextSend = textSend;
         }
     }
+
+    // Argumenty zdarzenia błędu
+    public class ExceptionEventArgs : EventArgs
+    {
+        public string Title { get; set; }
+        public string ExceptionMessage { get; set; }
+        public ExceptionEventArgs(string title, string exceptionMessage)
+        {
+            Title = title;
+            ExceptionMessage = exceptionMessage;
+        }
+    }
+
 }
