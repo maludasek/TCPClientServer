@@ -135,7 +135,7 @@ namespace TCPClientServer
                     OnRaiseClientConnectedEvent(new ClientConnectedEventArgs(newClient.Client.RemoteEndPoint.ToString(), mClients.Count));
 
                     // Obsłuż klienta newClient - dorobić
-                    // TakeCareOfTcpClient(newClient);
+                    TakeCareOfTcpClient(newClient);
                 }
             }
             catch (Exception ex)
