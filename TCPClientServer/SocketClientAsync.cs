@@ -189,7 +189,7 @@ namespace TCPClientServer
                 while (len > 0)
                 {
                     // zgłoś zdarzenie o przyjściu danych
-                    OnRaiseTextReceivedEvent(new TextReceivedEventArgs(client.Client.RemoteEndPoint.ToString(),new string(buff)));
+                    OnRaiseTextReceivedEvent(new TextReceivedEventArgs(client.Client.RemoteEndPoint.ToString(), new string(buff)));
                     // sprawdź wielkość danych wysłanych od serwra
                     len = await clientStreamReader.ReadAsync(buff, 0, buff.Length);
                 }
@@ -240,6 +240,67 @@ namespace TCPClientServer
                     // zgłoś zdarzenie o wysłaniu wiadomości do klienta
                     OnRaiseTextSendEvent(new TextSendEventArgs(mClient.Client.RemoteEndPoint.ToString(), strInputUser));
                 }
+            }
+        }
+
+        public async Task SendToServer(Stream strInputUser, string fileName)
+        {
+            // nic nie rób jeśli wyłana została pusta wiadomość
+            if (strInputUser.Length == 0)
+            {
+                return;
+            }
+
+            // Jeżeli klient istnieje
+            if (mClient != null)
+            {
+                // i klient jest podłączony do serwera
+                if (mClient.Connected)
+                {
+                    // stworz stream writera wykorzystując network stream klienta
+                    StreamWriter clientStreamWriter = new StreamWriter(mClient.GetStream())
+                    {
+                        // włącz czyszczenie bufora
+                        AutoFlush = true
+                    };
+
+                    // wyślij dane do serwera asynchronicznie urzywając streamReadera
+                    using (StreamReader sr = new StreamReader(strInputUser))
+                    {
+                        // Rezerwacja adresu dla bufora
+                        char[] c = null;
+
+                        // powtarzaj do momentu gdy jest stream
+                        while (sr.Peek() >= 0)
+                        {
+                            // Rezerwacja pamięcie dla bufora
+                            c = new char[64*1024];
+                            // Wypełnianie bufora
+                            sr.Read(c, 0, c.Length);
+                            // Wysłanie bufora do klienta
+                            await clientStreamWriter.WriteAsync(c);
+                            // Czyszczenie bufora
+                            Array.Clear(c, 0, c.Length);
+                        }
+                    }
+                    // zgłoś zdarzenie o wysłaniu pliku do klienta
+                    OnRaiseTextSendEvent(new TextSendEventArgs(mClient.Client.RemoteEndPoint.ToString(), "Wysłano plik " + fileName));
+                }
+            }
+        }
+
+        // 
+        private static byte[] ReadFully(Stream input)
+        {
+            byte[] buffer = new byte[64];
+            using (MemoryStream ms = new MemoryStream())
+            {
+                int read;
+                while ((read = input.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    ms.Write(buffer, 0, read);
+                }
+                return ms.ToArray();
             }
         }
 

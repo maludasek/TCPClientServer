@@ -29,6 +29,10 @@
         private void InitializeComponent()
         {
             this.panel3 = new System.Windows.Forms.Panel();
+            this.MessageRcvListBox = new System.Windows.Forms.ListBox();
+            this.MessageReceivedLbl = new System.Windows.Forms.Label();
+            this.LogLbl = new System.Windows.Forms.Label();
+            this.LogListBox = new System.Windows.Forms.ListBox();
             this.panel2 = new System.Windows.Forms.Panel();
             this.label4 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
@@ -40,10 +44,7 @@
             this.ConnectBtn = new System.Windows.Forms.Button();
             this.DisconnectBtn = new System.Windows.Forms.Button();
             this.SendBtn = new System.Windows.Forms.Button();
-            this.MessageRcvListBox = new System.Windows.Forms.ListBox();
-            this.MessageReceivedLbl = new System.Windows.Forms.Label();
-            this.LogLbl = new System.Windows.Forms.Label();
-            this.LogListBox = new System.Windows.Forms.ListBox();
+            this.SendFileBtn = new System.Windows.Forms.Button();
             this.panel3.SuspendLayout();
             this.panel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.PortUpDown)).BeginInit();
@@ -61,6 +62,45 @@
             this.panel3.Name = "panel3";
             this.panel3.Size = new System.Drawing.Size(692, 471);
             this.panel3.TabIndex = 16;
+            // 
+            // MessageRcvListBox
+            // 
+            this.MessageRcvListBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.MessageRcvListBox.FormattingEnabled = true;
+            this.MessageRcvListBox.Location = new System.Drawing.Point(12, 23);
+            this.MessageRcvListBox.Name = "MessageRcvListBox";
+            this.MessageRcvListBox.Size = new System.Drawing.Size(674, 251);
+            this.MessageRcvListBox.TabIndex = 9;
+            // 
+            // MessageReceivedLbl
+            // 
+            this.MessageReceivedLbl.AutoSize = true;
+            this.MessageReceivedLbl.Location = new System.Drawing.Point(9, 7);
+            this.MessageReceivedLbl.Name = "MessageReceivedLbl";
+            this.MessageReceivedLbl.Size = new System.Drawing.Size(103, 13);
+            this.MessageReceivedLbl.TabIndex = 8;
+            this.MessageReceivedLbl.Text = "Received messages";
+            // 
+            // LogLbl
+            // 
+            this.LogLbl.AutoSize = true;
+            this.LogLbl.Location = new System.Drawing.Point(9, 285);
+            this.LogLbl.Name = "LogLbl";
+            this.LogLbl.Size = new System.Drawing.Size(25, 13);
+            this.LogLbl.TabIndex = 7;
+            this.LogLbl.Text = "Log";
+            // 
+            // LogListBox
+            // 
+            this.LogListBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.LogListBox.FormattingEnabled = true;
+            this.LogListBox.Location = new System.Drawing.Point(12, 301);
+            this.LogListBox.Name = "LogListBox";
+            this.LogListBox.Size = new System.Drawing.Size(674, 160);
+            this.LogListBox.TabIndex = 6;
             // 
             // panel2
             // 
@@ -144,6 +184,7 @@
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.SendFileBtn);
             this.panel1.Controls.Add(this.ConnectBtn);
             this.panel1.Controls.Add(this.DisconnectBtn);
             this.panel1.Controls.Add(this.SendBtn);
@@ -183,44 +224,15 @@
             this.SendBtn.UseVisualStyleBackColor = true;
             this.SendBtn.Click += new System.EventHandler(this.SendBtn_Click);
             // 
-            // MessageRcvListBox
+            // SendFileBtn
             // 
-            this.MessageRcvListBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.MessageRcvListBox.FormattingEnabled = true;
-            this.MessageRcvListBox.Location = new System.Drawing.Point(12, 23);
-            this.MessageRcvListBox.Name = "MessageRcvListBox";
-            this.MessageRcvListBox.Size = new System.Drawing.Size(674, 251);
-            this.MessageRcvListBox.TabIndex = 9;
-            // 
-            // MessageReceivedLbl
-            // 
-            this.MessageReceivedLbl.AutoSize = true;
-            this.MessageReceivedLbl.Location = new System.Drawing.Point(9, 7);
-            this.MessageReceivedLbl.Name = "MessageReceivedLbl";
-            this.MessageReceivedLbl.Size = new System.Drawing.Size(103, 13);
-            this.MessageReceivedLbl.TabIndex = 8;
-            this.MessageReceivedLbl.Text = "Received messages";
-            // 
-            // LogLbl
-            // 
-            this.LogLbl.AutoSize = true;
-            this.LogLbl.Location = new System.Drawing.Point(9, 285);
-            this.LogLbl.Name = "LogLbl";
-            this.LogLbl.Size = new System.Drawing.Size(25, 13);
-            this.LogLbl.TabIndex = 7;
-            this.LogLbl.Text = "Log";
-            // 
-            // LogListBox
-            // 
-            this.LogListBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.LogListBox.FormattingEnabled = true;
-            this.LogListBox.Location = new System.Drawing.Point(12, 301);
-            this.LogListBox.Name = "LogListBox";
-            this.LogListBox.Size = new System.Drawing.Size(674, 160);
-            this.LogListBox.TabIndex = 6;
+            this.SendFileBtn.Location = new System.Drawing.Point(265, 3);
+            this.SendFileBtn.Name = "SendFileBtn";
+            this.SendFileBtn.Size = new System.Drawing.Size(94, 23);
+            this.SendFileBtn.TabIndex = 6;
+            this.SendFileBtn.Text = "Send file";
+            this.SendFileBtn.UseVisualStyleBackColor = true;
+            this.SendFileBtn.Click += new System.EventHandler(this.SendFileBtn_Click);
             // 
             // MainForm
             // 
@@ -261,6 +273,7 @@
         private System.Windows.Forms.Label MessageReceivedLbl;
         private System.Windows.Forms.Label LogLbl;
         private System.Windows.Forms.ListBox LogListBox;
+        private System.Windows.Forms.Button SendFileBtn;
     }
 }
 

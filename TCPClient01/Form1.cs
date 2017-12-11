@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -70,6 +71,38 @@ namespace TCPClient01
         private void DisconnectBtn_Click(object sender, EventArgs e)
         {
             client.DisconnectFromServer();
+        }
+
+        private void SendFileBtn_Click(object sender, EventArgs e)
+        {
+            Stream myStream = null;
+            OpenFileDialog SendFileOfd = new OpenFileDialog();
+
+            SendFileOfd.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            SendFileOfd.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
+            SendFileOfd.FilterIndex = 2;
+            SendFileOfd.RestoreDirectory = true;
+
+            if (SendFileOfd.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    if ((myStream = SendFileOfd.OpenFile()) != null)
+                    {
+                        using (myStream)
+                        {
+                            if (client.IsConnected)
+                            {
+                                client.SendToServer(myStream, SendFileOfd.FileName);
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Can't open file. Message error: " + ex.Message);
+                }
+            }
         }
     }
 }
