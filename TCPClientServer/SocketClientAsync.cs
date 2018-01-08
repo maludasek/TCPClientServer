@@ -178,7 +178,7 @@ namespace TCPClientServer
             // podłącz stream reader do network streamu klienta
             StreamReader clientStreamReader = new StreamReader(client.GetStream());
             // ustaw bufor na 64 znaki
-            char[] buff = new char[64];
+            char[] buff = new char[512];
 
             // spróbuj czytac dane od serwera
             try
@@ -245,10 +245,31 @@ namespace TCPClientServer
 
         public async Task SendToServer(Stream strInputUser, string fileName)
         {
+            MemoryStream tmpStream = new MemoryStream();
             // nic nie rób jeśli wyłana została pusta wiadomość
             if (strInputUser.Length == 0)
             {
                 return;
+            }
+            else
+            {
+                fileName = Path.GetFileName(fileName);
+                string beginAdd = "<BeginPlikName>" + fileName + "</BeginPlikName><Begin>";
+                string endAdd = "</End>";
+
+                byte[] data = Encoding.ASCII.GetBytes(beginAdd);
+                MemoryStream beginAddStream = new MemoryStream(data, 0, data.Length);
+                data = null;
+                data = Encoding.ASCII.GetBytes(endAdd);
+                MemoryStream endAddStream = new MemoryStream(data, 0, data.Length);
+                MemoryStream plikStream = new MemoryStream();
+                strInputUser.CopyTo(plikStream);
+                plikStream.Position = 0;
+
+                tmpStream.Append(beginAddStream);
+                tmpStream.Append(plikStream);
+                tmpStream.Append(endAddStream);
+                tmpStream.Position = 0;
             }
 
             // Jeżeli klient istnieje
@@ -265,7 +286,7 @@ namespace TCPClientServer
                     };
 
                     // wyślij dane do serwera asynchronicznie urzywając streamReadera
-                    using (StreamReader sr = new StreamReader(strInputUser))
+                    using (StreamReader sr = new StreamReader(tmpStream))
                     {
                         // Rezerwacja adresu dla bufora
                         char[] c = null;
@@ -274,7 +295,7 @@ namespace TCPClientServer
                         while (sr.Peek() >= 0)
                         {
                             // Rezerwacja pamięcie dla bufora
-                            c = new char[64*1024];
+                            c = new char[tmpStream.Length];
                             // Wypełnianie bufora
                             sr.Read(c, 0, c.Length);
                             // Wysłanie bufora do klienta
@@ -286,21 +307,6 @@ namespace TCPClientServer
                     // zgłoś zdarzenie o wysłaniu pliku do klienta
                     OnRaiseTextSendEvent(new TextSendEventArgs(mClient.Client.RemoteEndPoint.ToString(), "Wysłano plik " + fileName));
                 }
-            }
-        }
-
-        // 
-        private static byte[] ReadFully(Stream input)
-        {
-            byte[] buffer = new byte[64];
-            using (MemoryStream ms = new MemoryStream())
-            {
-                int read;
-                while ((read = input.Read(buffer, 0, buffer.Length)) > 0)
-                {
-                    ms.Write(buffer, 0, read);
-                }
-                return ms.ToArray();
             }
         }
 

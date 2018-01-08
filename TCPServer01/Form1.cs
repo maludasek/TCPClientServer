@@ -139,5 +139,10 @@ namespace TCPServer01
             // Odszukanie i przypisanie do IPTxtBox pierwszego znalezionego IP przynależnego do grupy InterNetwork
             IPTxtBox.Text = Dns.GetHostAddresses(Dns.GetHostName()).Where(addrf => addrf.AddressFamily == AddressFamily.InterNetwork).FirstOrDefault().ToString();
         }
+
+        private void ClearMsgRcvdBtn_Click(object sender, EventArgs e)
+        {
+            MessageRcvListBox.Items.Clear();
+        }
     }
 }

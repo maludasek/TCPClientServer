@@ -29,6 +29,10 @@
         private void InitializeComponent()
         {
             this.ClientPanel = new System.Windows.Forms.Panel();
+            this.PortLbl = new System.Windows.Forms.Label();
+            this.IpLbl = new System.Windows.Forms.Label();
+            this.PortUpDown = new System.Windows.Forms.NumericUpDown();
+            this.IPTxtBox = new System.Windows.Forms.TextBox();
             this.MessageRcvListBox = new System.Windows.Forms.ListBox();
             this.MessageReceivedLbl = new System.Windows.Forms.Label();
             this.LogLbl = new System.Windows.Forms.Label();
@@ -36,16 +40,13 @@
             this.MessageSendTxtBox = new System.Windows.Forms.TextBox();
             this.MessageLbl = new System.Windows.Forms.Label();
             this.BottomPanel = new System.Windows.Forms.Panel();
-            this.SrvStartBtn = new System.Windows.Forms.Button();
-            this.SrvStopBtn = new System.Windows.Forms.Button();
             this.Send2AllBtn = new System.Windows.Forms.Button();
-            this.IPTxtBox = new System.Windows.Forms.TextBox();
-            this.PortUpDown = new System.Windows.Forms.NumericUpDown();
-            this.IpLbl = new System.Windows.Forms.Label();
-            this.PortLbl = new System.Windows.Forms.Label();
+            this.SrvStopBtn = new System.Windows.Forms.Button();
+            this.SrvStartBtn = new System.Windows.Forms.Button();
+            this.ClearMsgRcvdBtn = new System.Windows.Forms.Button();
             this.ClientPanel.SuspendLayout();
-            this.BottomPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.PortUpDown)).BeginInit();
+            this.BottomPanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // ClientPanel
@@ -65,6 +66,53 @@
             this.ClientPanel.Name = "ClientPanel";
             this.ClientPanel.Size = new System.Drawing.Size(1023, 559);
             this.ClientPanel.TabIndex = 4;
+            // 
+            // PortLbl
+            // 
+            this.PortLbl.AutoSize = true;
+            this.PortLbl.Location = new System.Drawing.Point(115, 9);
+            this.PortLbl.Name = "PortLbl";
+            this.PortLbl.Size = new System.Drawing.Size(26, 13);
+            this.PortLbl.TabIndex = 10;
+            this.PortLbl.Text = "Port";
+            // 
+            // IpLbl
+            // 
+            this.IpLbl.AutoSize = true;
+            this.IpLbl.Location = new System.Drawing.Point(9, 9);
+            this.IpLbl.Name = "IpLbl";
+            this.IpLbl.Size = new System.Drawing.Size(17, 13);
+            this.IpLbl.TabIndex = 9;
+            this.IpLbl.Text = "IP";
+            // 
+            // PortUpDown
+            // 
+            this.PortUpDown.Location = new System.Drawing.Point(118, 25);
+            this.PortUpDown.Maximum = new decimal(new int[] {
+            65535,
+            0,
+            0,
+            0});
+            this.PortUpDown.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.PortUpDown.Name = "PortUpDown";
+            this.PortUpDown.Size = new System.Drawing.Size(59, 20);
+            this.PortUpDown.TabIndex = 8;
+            this.PortUpDown.Value = new decimal(new int[] {
+            23000,
+            0,
+            0,
+            0});
+            // 
+            // IPTxtBox
+            // 
+            this.IPTxtBox.Location = new System.Drawing.Point(12, 25);
+            this.IPTxtBox.Name = "IPTxtBox";
+            this.IPTxtBox.Size = new System.Drawing.Size(100, 20);
+            this.IPTxtBox.TabIndex = 7;
             // 
             // MessageRcvListBox
             // 
@@ -125,6 +173,7 @@
             // 
             // BottomPanel
             // 
+            this.BottomPanel.Controls.Add(this.ClearMsgRcvdBtn);
             this.BottomPanel.Controls.Add(this.Send2AllBtn);
             this.BottomPanel.Controls.Add(this.SrvStopBtn);
             this.BottomPanel.Controls.Add(this.SrvStartBtn);
@@ -133,26 +182,6 @@
             this.BottomPanel.Name = "BottomPanel";
             this.BottomPanel.Size = new System.Drawing.Size(1023, 50);
             this.BottomPanel.TabIndex = 3;
-            // 
-            // SrvStartBtn
-            // 
-            this.SrvStartBtn.Location = new System.Drawing.Point(12, 6);
-            this.SrvStartBtn.Name = "SrvStartBtn";
-            this.SrvStartBtn.Size = new System.Drawing.Size(75, 41);
-            this.SrvStartBtn.TabIndex = 0;
-            this.SrvStartBtn.Text = "Start";
-            this.SrvStartBtn.UseVisualStyleBackColor = true;
-            this.SrvStartBtn.Click += new System.EventHandler(this.SrvStartBtn_Click);
-            // 
-            // SrvStopBtn
-            // 
-            this.SrvStopBtn.Location = new System.Drawing.Point(91, 6);
-            this.SrvStopBtn.Name = "SrvStopBtn";
-            this.SrvStopBtn.Size = new System.Drawing.Size(75, 41);
-            this.SrvStopBtn.TabIndex = 1;
-            this.SrvStopBtn.Text = "Stop";
-            this.SrvStopBtn.UseVisualStyleBackColor = true;
-            this.SrvStopBtn.Click += new System.EventHandler(this.SrvStopBtn_Click);
             // 
             // Send2AllBtn
             // 
@@ -164,52 +193,35 @@
             this.Send2AllBtn.UseVisualStyleBackColor = true;
             this.Send2AllBtn.Click += new System.EventHandler(this.Send2AllBtn_Click);
             // 
-            // IPTxtBox
+            // SrvStopBtn
             // 
-            this.IPTxtBox.Location = new System.Drawing.Point(12, 25);
-            this.IPTxtBox.Name = "IPTxtBox";
-            this.IPTxtBox.Size = new System.Drawing.Size(100, 20);
-            this.IPTxtBox.TabIndex = 7;
+            this.SrvStopBtn.Location = new System.Drawing.Point(91, 6);
+            this.SrvStopBtn.Name = "SrvStopBtn";
+            this.SrvStopBtn.Size = new System.Drawing.Size(75, 41);
+            this.SrvStopBtn.TabIndex = 1;
+            this.SrvStopBtn.Text = "Stop";
+            this.SrvStopBtn.UseVisualStyleBackColor = true;
+            this.SrvStopBtn.Click += new System.EventHandler(this.SrvStopBtn_Click);
             // 
-            // PortUpDown
+            // SrvStartBtn
             // 
-            this.PortUpDown.Location = new System.Drawing.Point(118, 25);
-            this.PortUpDown.Maximum = new decimal(new int[] {
-            65535,
-            0,
-            0,
-            0});
-            this.PortUpDown.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.PortUpDown.Name = "PortUpDown";
-            this.PortUpDown.Size = new System.Drawing.Size(59, 20);
-            this.PortUpDown.TabIndex = 8;
-            this.PortUpDown.Value = new decimal(new int[] {
-            23000,
-            0,
-            0,
-            0});
+            this.SrvStartBtn.Location = new System.Drawing.Point(12, 6);
+            this.SrvStartBtn.Name = "SrvStartBtn";
+            this.SrvStartBtn.Size = new System.Drawing.Size(75, 41);
+            this.SrvStartBtn.TabIndex = 0;
+            this.SrvStartBtn.Text = "Start";
+            this.SrvStartBtn.UseVisualStyleBackColor = true;
+            this.SrvStartBtn.Click += new System.EventHandler(this.SrvStartBtn_Click);
             // 
-            // IpLbl
+            // ClearMsgRcvdBtn
             // 
-            this.IpLbl.AutoSize = true;
-            this.IpLbl.Location = new System.Drawing.Point(9, 9);
-            this.IpLbl.Name = "IpLbl";
-            this.IpLbl.Size = new System.Drawing.Size(17, 13);
-            this.IpLbl.TabIndex = 9;
-            this.IpLbl.Text = "IP";
-            // 
-            // PortLbl
-            // 
-            this.PortLbl.AutoSize = true;
-            this.PortLbl.Location = new System.Drawing.Point(115, 9);
-            this.PortLbl.Name = "PortLbl";
-            this.PortLbl.Size = new System.Drawing.Size(26, 13);
-            this.PortLbl.TabIndex = 10;
-            this.PortLbl.Text = "Port";
+            this.ClearMsgRcvdBtn.Location = new System.Drawing.Point(253, 6);
+            this.ClearMsgRcvdBtn.Name = "ClearMsgRcvdBtn";
+            this.ClearMsgRcvdBtn.Size = new System.Drawing.Size(110, 41);
+            this.ClearMsgRcvdBtn.TabIndex = 3;
+            this.ClearMsgRcvdBtn.Text = "Clear Msg Recived ";
+            this.ClearMsgRcvdBtn.UseVisualStyleBackColor = true;
+            this.ClearMsgRcvdBtn.Click += new System.EventHandler(this.ClearMsgRcvdBtn_Click);
             // 
             // MainForm
             // 
@@ -225,8 +237,8 @@
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.ClientPanel.ResumeLayout(false);
             this.ClientPanel.PerformLayout();
-            this.BottomPanel.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.PortUpDown)).EndInit();
+            this.BottomPanel.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -248,6 +260,7 @@
         private System.Windows.Forms.Label IpLbl;
         private System.Windows.Forms.NumericUpDown PortUpDown;
         private System.Windows.Forms.TextBox IPTxtBox;
+        private System.Windows.Forms.Button ClearMsgRcvdBtn;
     }
 }
 

@@ -76,12 +76,13 @@ namespace TCPClient01
         private void SendFileBtn_Click(object sender, EventArgs e)
         {
             Stream myStream = null;
-            OpenFileDialog SendFileOfd = new OpenFileDialog();
-
-            SendFileOfd.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            SendFileOfd.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
-            SendFileOfd.FilterIndex = 2;
-            SendFileOfd.RestoreDirectory = true;
+            OpenFileDialog SendFileOfd = new OpenFileDialog
+            {
+                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+                Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*",
+                FilterIndex = 2,
+                RestoreDirectory = true
+            };
 
             if (SendFileOfd.ShowDialog() == DialogResult.OK)
             {

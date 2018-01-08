@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace TCPClientServer
@@ -22,6 +23,9 @@ namespace TCPClientServer
         List<TcpClient> mClients;
         // Zmienna Czy Serwer pracuje
         public bool KeepRunning { get; set; }
+        private bool IncomingFile { get; set; }
+        private string PlikContent;
+
 
         // Wyjątki
         // Zgłoszenie zdarzenia Startu Serwera
@@ -106,14 +110,13 @@ namespace TCPClientServer
                 port = 23000;
             }
 
-            // Tworzy listenera z ustawieniami IP i portu
-            mIP = ipAddr;
-            mPort = port;
-            mTcpListener = new TcpListener(mIP, mPort);
-
             // Próba uruchomienia Serwera
             try
             {
+                // Tworzy listenera z ustawieniami IP i portu
+                mIP = ipAddr;
+                mPort = port;
+                mTcpListener = new TcpListener(mIP, mPort);
                 // Startuje listenera
                 mTcpListener.Start();
                 // Obsłuż zdarzenie Startu Serwera
@@ -160,7 +163,7 @@ namespace TCPClientServer
                 // Czytanie strumienia klienta
                 reader = new StreamReader(stream);
                 // Deklaracja bufora strumienia
-                char[] buff = new char[64];
+                char[] buff = new char[512];
                 // Czytanie danych gdy Serwer chodzi 
                 while (KeepRunning)
                 {
@@ -185,11 +188,50 @@ namespace TCPClientServer
                     // Konwersja bufora na string
                     string receivedText = new string(buff);
 
-                    // Przesyła dane z bufora do debugera
-                    // Debug.WriteLine(String.Format("*** Received: {0}", receivedText));
+                    if (receivedText.StartsWith("<BeginPlikName>"))
+                    {
+                        IncomingFile = true;
+                        PlikContent = "";
+                        OnRaiseTextReceivedEvent(new TextReceivedEventArgs(paramClient.Client.RemoteEndPoint.ToString(), "Zaczynam zapisywanie pliku od klienta: "+ paramClient.Client.RemoteEndPoint.ToString()));
+                    }
+                    if (IncomingFile)
+                    {
+                        PlikContent += receivedText;
+                    }
+                    if (receivedText.Contains("</End>"))
+                    {
+                        PlikContent += receivedText;
+                        IncomingFile = false;
 
-                    // Obsługuje zdarzenie odczytania danych od klienta
-                    OnRaiseTextReceivedEvent(new TextReceivedEventArgs(paramClient.Client.RemoteEndPoint.ToString(), receivedText));
+                        int startSciezkaPos = PlikContent.IndexOf("<BeginPlikName>") + 15;
+                        int endSciezkaPos = PlikContent.IndexOf("</BeginPlikName>");
+                        string sciezka = Environment.CurrentDirectory;
+                        sciezka += "\\" + PlikContent.Substring(startSciezkaPos, (PlikContent.Length - startSciezkaPos) - (PlikContent.Length - endSciezkaPos));
+
+                        int startPos = PlikContent.IndexOf("<Begin>") + 7;
+                        int endPos = PlikContent.IndexOf("</End>");
+                        string plik = PlikContent.Substring(startPos, (PlikContent.Length - startPos) - (PlikContent.Length - endPos));
+
+
+                        if (File.Exists(sciezka))
+                        {
+                            File.Delete(sciezka);
+                        }
+                        File.WriteAllText(sciezka, plik);
+
+                        OnRaiseTextReceivedEvent(new TextReceivedEventArgs(paramClient.Client.RemoteEndPoint.ToString(), "Zakończono zapisywanie pliku od klienta: "+ paramClient.Client.RemoteEndPoint.ToString()));
+                        Debug.WriteLine(plik);
+                    }
+
+                    if (!IncomingFile && !receivedText.Contains("</End>") && !receivedText.StartsWith("<BeginPlikName>"))
+                    {
+                        // Przesyła dane z bufora do debugera
+                        // Debug.WriteLine(String.Format("*** Received: {0}", receivedText));
+
+                        // Obsługuje zdarzenie odczytania danych od klienta
+                        OnRaiseTextReceivedEvent(new TextReceivedEventArgs(paramClient.Client.RemoteEndPoint.ToString(), receivedText));
+
+                    }
 
                     // Czyszczenie bufora
                     Array.Clear(buff, 0, buff.Length);
@@ -216,6 +258,8 @@ namespace TCPClientServer
                 mClients.Remove(paramClient);
                 // Obsłuż odłączenie się klienta
                 OnRaiseClientDisconnectedEvent(new ClientDisconnectedEventArgs(paramClient.Client.RemoteEndPoint.ToString(), mClients.Count));
+
+                KeepRunning = false;
 
                 // Wyślij komunikat do debugera
                 // Debug.WriteLine(String.Format("Client: {0} disconnected, # of connected clients {1}", paramClient.Client.RemoteEndPoint, mClients.Count));
@@ -287,7 +331,6 @@ namespace TCPClientServer
                 Debug.WriteLine(String.Format("Exception message: {0}", ex.Message.ToString()));
             }
         }
-
 
     }
 }
