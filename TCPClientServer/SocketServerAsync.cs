@@ -25,7 +25,8 @@ namespace TCPClientServer
         public bool KeepRunning { get; set; }
         private bool IncomingFile { get; set; }
         private string PlikContent;
-
+        private byte[] bytePlik;
+        private char[] charPlik;
 
         // Wyjątki
         // Zgłoszenie zdarzenia Startu Serwera
@@ -153,6 +154,10 @@ namespace TCPClientServer
         {
             // Deklaracja strumienia sieciowego
             NetworkStream stream = null;
+
+            // Deklaracja strumienia pliku
+            Stream plikStream = null;
+
             // Deklaracja czytnika strumieni
             StreamReader reader = null;
 
@@ -167,15 +172,9 @@ namespace TCPClientServer
                 // Czytanie danych gdy Serwer chodzi 
                 while (KeepRunning)
                 {
-                    // Wyślij info do debugera o rozpoczęciu czytania strumienia
-                    // Debug.WriteLine("*** Ready to read");
-
                     // Czytaj asynchronicznie strumień od klienta - nRet ilość przeczytanych danych
                     int nRet = await reader.ReadAsync(buff, 0, buff.Length);
-
-                    // Wyślij info do debugera o ilości przechwyconych danych
-                    //Debug.WriteLine(String.Format("Returned: {0}", nRet));
-
+                    //int recv = await stream.ReadAsync(buffByte, 0, buffByte.Length);
                     // Jeżeli ilość danych jest równa 0
                     if (nRet == 0)
                     {
@@ -184,7 +183,6 @@ namespace TCPClientServer
                         // przerwij pętle czytania danych od klienta
                         break;
                     }
-
                     // Konwersja bufora na string
                     string receivedText = new string(buff);
 
@@ -192,16 +190,32 @@ namespace TCPClientServer
                     {
                         IncomingFile = true;
                         PlikContent = "";
-                        OnRaiseTextReceivedEvent(new TextReceivedEventArgs(paramClient.Client.RemoteEndPoint.ToString(), "Zaczynam zapisywanie pliku od klienta: "+ paramClient.Client.RemoteEndPoint.ToString()));
+                        bytePlik = new byte[0];
+                        charPlik = new char[0];
+
+                        OnRaiseTextReceivedEvent(new TextReceivedEventArgs(paramClient.Client.RemoteEndPoint.ToString(), "Zaczynam zapisywanie pliku od klienta: " + paramClient.Client.RemoteEndPoint.ToString()));
                     }
                     if (IncomingFile)
                     {
                         PlikContent += receivedText;
+
+                        char[] tmpChar = new char[charPlik.Length + buff.Length];
+                        charPlik.CopyTo(tmpChar, 0);
+                        buff.CopyTo(tmpChar, charPlik.Length);
+                        charPlik = new char[tmpChar.Length];
+                        tmpChar.CopyTo(charPlik, 0);
+
+                        byte[] tmpBytes = Encoding.ASCII.GetBytes(buff);
+                        int i = bytePlik.Length;
+                        Array.Resize<byte>(ref bytePlik, i + tmpBytes.Length);
+                        tmpBytes.CopyTo(bytePlik, i);
                     }
                     if (receivedText.Contains("</End>"))
                     {
                         PlikContent += receivedText;
                         IncomingFile = false;
+
+                        string test = charPlik.ToString();
 
                         int startSciezkaPos = PlikContent.IndexOf("<BeginPlikName>") + 15;
                         int endSciezkaPos = PlikContent.IndexOf("</BeginPlikName>");
@@ -213,13 +227,24 @@ namespace TCPClientServer
                         string plik = PlikContent.Substring(startPos, (PlikContent.Length - startPos) - (PlikContent.Length - endPos));
 
 
+
                         if (File.Exists(sciezka))
                         {
                             File.Delete(sciezka);
                         }
-                        File.WriteAllText(sciezka, plik);
 
-                        OnRaiseTextReceivedEvent(new TextReceivedEventArgs(paramClient.Client.RemoteEndPoint.ToString(), "Zakończono zapisywanie pliku od klienta: "+ paramClient.Client.RemoteEndPoint.ToString()));
+                        using (FileStream zapisz = new FileStream(sciezka, FileMode.Create))
+                        {
+                            zapisz.Write(bytePlik, startPos, (bytePlik.Length - startPos) - (bytePlik.Length - endPos));
+
+                            //StreamWriter swPlik = new StreamWriter(zapisz);
+                            //swPlik.Write(charPlik, startPos, (charPlik.Length - startPos) - (charPlik.Length - endPos));
+                            //swPlik.Close();
+                        }
+
+                        //File.WriteAllText(sciezka, plik);
+
+                        OnRaiseTextReceivedEvent(new TextReceivedEventArgs(paramClient.Client.RemoteEndPoint.ToString(), "Zakończono zapisywanie pliku od klienta: " + paramClient.Client.RemoteEndPoint.ToString()));
                         Debug.WriteLine(plik);
                     }
 

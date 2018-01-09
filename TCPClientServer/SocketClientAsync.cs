@@ -243,9 +243,79 @@ namespace TCPClientServer
             }
         }
 
+        //public async Task SendToServer(Stream strInputUser, string fileName)
+        //{
+        //    MemoryStream tmpStream = new MemoryStream();
+        //    // nic nie rób jeśli wyłana została pusta wiadomość
+        //    if (strInputUser.Length == 0)
+        //    {
+        //        return;
+        //    }
+        //    else
+        //    {
+        //        fileName = Path.GetFileName(fileName);
+        //        string beginAdd = "<BeginPlikName>" + fileName + "</BeginPlikName><Begin>";
+        //        string endAdd = "</End>";
+
+        //        byte[] data = Encoding.ASCII.GetBytes(beginAdd);
+
+        //        MemoryStream beginAddStream = new MemoryStream(data, 0, data.Length);
+
+        //        data = null;
+        //        data = Encoding.ASCII.GetBytes(endAdd);
+        //        MemoryStream endAddStream = new MemoryStream(data, 0, data.Length);
+        //        MemoryStream plikStream = new MemoryStream();
+        //        strInputUser.CopyTo(plikStream);
+        //        plikStream.Position = 0;
+
+        //        tmpStream.Append(beginAddStream);
+        //        tmpStream.Append(plikStream);
+        //        tmpStream.Append(endAddStream);
+        //        tmpStream.Position = 0;
+        //    }
+
+        //    // Jeżeli klient istnieje
+        //    if (mClient != null)
+        //    {
+        //        // i klient jest podłączony do serwera
+        //        if (mClient.Connected)
+        //        {
+        //            // stworz stream writera wykorzystując network stream klienta
+        //            StreamWriter clientStreamWriter = new StreamWriter(mClient.GetStream())
+        //            {
+        //                // włącz czyszczenie bufora
+        //                AutoFlush = true
+        //            };
+
+        //            // wyślij dane do serwera asynchronicznie urzywając streamReadera
+        //            using (StreamReader sr = new StreamReader(tmpStream))
+        //            {
+        //                // Rezerwacja adresu dla bufora
+        //                char[] c = null;
+
+        //                // powtarzaj do momentu gdy jest stream
+        //                while (sr.Peek() >= 0)
+        //                {
+        //                    // Rezerwacja pamięcie dla bufora
+        //                    c = new char[tmpStream.Length];
+        //                    // Wypełnianie bufora
+        //                    sr.Read(c, 0, c.Length);
+        //                    // Wysłanie bufora do klienta
+        //                    await clientStreamWriter.WriteAsync(c);
+
+        //                    // Czyszczenie bufora
+        //                    Array.Clear(c, 0, c.Length);
+        //                }
+        //            }
+        //            // zgłoś zdarzenie o wysłaniu pliku do klienta
+        //            OnRaiseTextSendEvent(new TextSendEventArgs(mClient.Client.RemoteEndPoint.ToString(), "Wysłano plik " + fileName));
+        //        }
+        //    }
+        //}
+
         public async Task SendToServer(Stream strInputUser, string fileName)
         {
-            MemoryStream tmpStream = new MemoryStream();
+            byte[] data = new byte[0];
             // nic nie rób jeśli wyłana została pusta wiadomość
             if (strInputUser.Length == 0)
             {
@@ -255,21 +325,37 @@ namespace TCPClientServer
             {
                 fileName = Path.GetFileName(fileName);
                 string beginAdd = "<BeginPlikName>" + fileName + "</BeginPlikName><Begin>";
+                byte[] beginAddBytes = Encoding.ASCII.GetBytes(beginAdd);
+                long beginLength = beginAddBytes.LongLength;
+
                 string endAdd = "</End>";
+                byte[] endAddBytes = Encoding.ASCII.GetBytes(endAdd);
+                long endLength = endAddBytes.LongLength;
 
-                byte[] data = Encoding.ASCII.GetBytes(beginAdd);
-                MemoryStream beginAddStream = new MemoryStream(data, 0, data.Length);
-                data = null;
-                data = Encoding.ASCII.GetBytes(endAdd);
-                MemoryStream endAddStream = new MemoryStream(data, 0, data.Length);
-                MemoryStream plikStream = new MemoryStream();
-                strInputUser.CopyTo(plikStream);
-                plikStream.Position = 0;
+                byte[] plikBytes = new byte[strInputUser.Length];
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    int read = strInputUser.Read(plikBytes, 0, plikBytes.Length);
+                    if (read > 0)
+                    {
+                        ms.Write(plikBytes, 0, read);
+                    }
+                }
+                long plikLength = plikBytes.LongLength;
 
-                tmpStream.Append(beginAddStream);
-                tmpStream.Append(plikStream);
-                tmpStream.Append(endAddStream);
-                tmpStream.Position = 0;
+
+                // dodaj beginAddBytes to tmpData
+                data = new byte[beginLength + plikLength + endLength];
+                beginAddBytes.CopyTo(data, 0);
+
+                //dodaj plikBytes do tmpData
+                plikBytes.CopyTo(data, beginLength);
+
+                // dodaj endAddBytes do tmpData
+                endAddBytes.CopyTo(data, beginLength + plikLength);
+
+                var str = Encoding.Default.GetString(data);
+
             }
 
             // Jeżeli klient istnieje
@@ -278,37 +364,14 @@ namespace TCPClientServer
                 // i klient jest podłączony do serwera
                 if (mClient.Connected)
                 {
-                    // stworz stream writera wykorzystując network stream klienta
-                    StreamWriter clientStreamWriter = new StreamWriter(mClient.GetStream())
-                    {
-                        // włącz czyszczenie bufora
-                        AutoFlush = true
-                    };
-
-                    // wyślij dane do serwera asynchronicznie urzywając streamReadera
-                    using (StreamReader sr = new StreamReader(tmpStream))
-                    {
-                        // Rezerwacja adresu dla bufora
-                        char[] c = null;
-
-                        // powtarzaj do momentu gdy jest stream
-                        while (sr.Peek() >= 0)
-                        {
-                            // Rezerwacja pamięcie dla bufora
-                            c = new char[tmpStream.Length];
-                            // Wypełnianie bufora
-                            sr.Read(c, 0, c.Length);
-                            // Wysłanie bufora do klienta
-                            await clientStreamWriter.WriteAsync(c);
-                            // Czyszczenie bufora
-                            Array.Clear(c, 0, c.Length);
-                        }
-                    }
+                    await mClient.GetStream().WriteAsync(data, 0, data.Length);
                     // zgłoś zdarzenie o wysłaniu pliku do klienta
                     OnRaiseTextSendEvent(new TextSendEventArgs(mClient.Client.RemoteEndPoint.ToString(), "Wysłano plik " + fileName));
+
                 }
             }
         }
+
 
         // Zamknij i rozłącz klinta
         public void DisconnectFromServer()
